@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { login } from "../../utils/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
 
 function Login() {
@@ -58,6 +58,8 @@ function Login() {
         />
         <br />
         <button type="submit">login</button>
+        <hr />
+        <Link to="/forgot-password">Forgot Password</Link>
       </form>
     </div>
   );
