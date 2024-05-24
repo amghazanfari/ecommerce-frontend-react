@@ -12,7 +12,18 @@ function Dashboard() {
           <Link to={`/logout`}>Logout</Link>
         </div>
       ) : (
-        <div>Home</div>
+        <div>
+          <h1>Home Page</h1>
+          <div className="d-flex">
+            <Link className="btn btn-primary" to={"/register"}>
+              Register
+            </Link>
+            <br />
+            <Link className="btn btn-success ms-4" to={"/login"}>
+              Login
+            </Link>
+          </div>
+        </div>
       )}
     </>
   );
