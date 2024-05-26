@@ -2,10 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import apiInstance from "../../utils/axios";
+import UserData from "../plugin/UserData";
+import CartID from "../plugin/CartID";
 
 function ProductDetail() {
   const [product, setProduct] = useState({});
+  const [colorValue, setColorValue] = useState("No Color");
+  const [sizeValue, setSizeValue] = useState("No size");
+  const [qtyValue, setQtyValue] = useState(1);
   const param = useParams();
+  const userData = UserData();
+  const cartID = CartID();
 
   useEffect(() => {
     apiInstance
@@ -17,6 +24,45 @@ function ProductDetail() {
         console.log("there is an error in connecting to backend");
       });
   }, [param.slug]);
+
+  const handleColorButtonClick = (event) => {
+    const colorNameInput = event.target
+      .closest(".color_button")
+      .parentNode.querySelector(".color_image");
+    setColorValue(colorNameInput.value);
+  };
+
+  const handleSizeButtonClick = (event) => {
+    const sizeNameInput = event.target
+      .closest(".size_button")
+      .parentNode.querySelector(".size_name");
+    setSizeValue(sizeNameInput.value);
+  };
+
+  const handleQuantityChange = (event) => {
+    setQtyValue(event.target.value);
+  };
+
+  const handleAddToCart = async () => {
+    try {
+      const formData = new FormData();
+
+      formData.append("product_id", product.id);
+      formData.append("user_id", userData?.user_id);
+      formData.append("qty", qtyValue);
+      formData.append("price", product.price);
+      formData.append("shipping_amount", product.shipping_amount);
+      formData.append("country", "iran");
+      formData.append("size", sizeValue);
+      formData.append("color", colorValue);
+      formData.append("cart_id", cartID);
+
+      const response = await apiInstance.post("cart-view/", formData);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <main className="mb-4 mt-4">
       <div className="container">
@@ -149,68 +195,83 @@ function ProductDetail() {
                           id="typeNumber"
                           className="form-control quantity"
                           min={1}
-                          value={1}
+                          value={qtyValue}
+                          onChange={handleQuantityChange}
                         />
                       </div>
                     </div>
 
                     {/* Size */}
-                    <div className="col-md-6 mb-4">
-                      <div className="form-outline">
-                        <label className="form-label" htmlFor="typeNumber">
-                          <b>Size:</b> XS
-                        </label>
+                    {product?.size?.length > 0 ? (
+                      <div className="col-md-6 mb-4">
+                        <div className="form-outline">
+                          <label className="form-label" htmlFor="typeNumber">
+                            <b>Size:</b> {sizeValue}
+                          </label>
+                        </div>
+                        <div className="d-flex">
+                          {product?.size?.map((s) => (
+                            <div key={s.id} className="me-2">
+                              <input
+                                type="hidden"
+                                className="size_name"
+                                value={s.name}
+                              />
+                              <button
+                                type="button"
+                                onClick={handleSizeButtonClick}
+                                className="btn btn-secondary size_button"
+                              >
+                                {s.name}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="d-flex">
-                        {product?.size?.map((s) => (
-                          <div key={s.id} className="me-2">
-                            <input
-                              type="hidden"
-                              className="size_name"
-                              value={s.name}
-                            />
-                            <button className="btn btn-secondary size_button">
-                              {s.name}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    ) : (
+                      <div></div>
+                    )}
 
                     {/* Colors */}
-
-                    <div className="col-md-6 mb-4">
-                      <div className="form-outline">
-                        <label className="form-label" htmlFor="typeNumber">
-                          <b>Color:</b> <span>Red</span>
-                        </label>
+                    {product?.color?.length > 0 ? (
+                      <div className="col-md-6 mb-4">
+                        <div className="form-outline">
+                          <label className="form-label" htmlFor="typeNumber">
+                            <b>Color:</b> <span>{colorValue}</span>
+                          </label>
+                        </div>
+                        <div className="d-flex">
+                          {product?.color?.map((c) => (
+                            <div key={c.id}>
+                              <input
+                                type="hidden"
+                                className="color_name"
+                                value={c.name}
+                              />
+                              <input
+                                type="hidden"
+                                className="color_image"
+                                value={c.color_code}
+                              />
+                              <button
+                                className="btn p-3 me-2 color_button"
+                                type="button"
+                                onClick={handleColorButtonClick}
+                                style={{ background: `${c.color_code}` }}
+                              ></button>
+                            </div>
+                          ))}
+                        </div>
+                        <hr />
                       </div>
-                      <div className="d-flex">
-                        {product?.color?.map((c) => (
-                          <div key={c.id}>
-                            <input
-                              type="hidden"
-                              className="color_name"
-                              value={c.id}
-                            />
-                            <input
-                              type="hidden"
-                              className="color_image"
-                              value={c.id}
-                            />
-                            <button
-                              className="btn p-3 me-2 color_button"
-                              style={{ background: `${c.color_code}` }}
-                            ></button>
-                          </div>
-                        ))}
-                      </div>
-                      <hr />
-                    </div>
+                    ) : (
+                      <div></div>
+                    )}
                   </div>
                   <button
                     type="button"
                     className="btn btn-primary btn-rounded me-2"
+                    onClick={handleAddToCart}
                   >
                     <i className="fas fa-cart-plus me-2" /> Add to cart
                   </button>
