@@ -4,6 +4,15 @@ import { useParams } from "react-router-dom";
 import apiInstance from "../../utils/axios";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
+import Swal from "sweetalert2";
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top",
+  showConfirmButton: false,
+  timer: 1500,
+  timerProgressBar: true,
+});
 
 function ProductDetail() {
   const [product, setProduct] = useState({});
@@ -44,24 +53,24 @@ function ProductDetail() {
   };
 
   const handleAddToCart = async () => {
-    try {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      formData.append("product_id", product.id);
-      formData.append("user_id", userData?.user_id);
-      formData.append("qty", qtyValue);
-      formData.append("price", product.price);
-      formData.append("shipping_amount", product.shipping_amount);
-      formData.append("country", "iran");
-      formData.append("size", sizeValue);
-      formData.append("color", colorValue);
-      formData.append("cart_id", cartID);
+    formData.append("product_id", product.id);
+    formData.append("user_id", userData?.user_id);
+    formData.append("qty", qtyValue);
+    formData.append("price", product.price);
+    formData.append("shipping_amount", product.shipping_amount);
+    formData.append("country", "iran");
+    formData.append("size", sizeValue);
+    formData.append("color", colorValue);
+    formData.append("cart_id", cartID);
 
-      const response = await apiInstance.post("cart-view/", formData);
-      console.log(response.data);
-    } catch (error) {
-      console.log(error);
-    }
+    const response = await apiInstance.post("cart-view/", formData);
+    Toast.fire({
+      icon: "success",
+      title: "Added to cart",
+    });
+    console.log(response.data);
   };
   return (
     <main className="mb-4 mt-4">
