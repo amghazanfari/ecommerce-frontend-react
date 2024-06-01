@@ -4,6 +4,7 @@ import apiInstance from "../../utils/axios";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Toast = Swal.mixin({
   toast: true,
@@ -28,6 +29,7 @@ function Cart() {
 
   const userData = UserData();
   const cartID = CartID();
+  const navigate = useNavigate();
 
   const fetchCartData = (cartID, userID) => {
     const url = userID
@@ -198,14 +200,7 @@ function Cart() {
       icon: "success",
       title: response.data.message,
     });
-
-    console.log(fullName);
-    console.log(email);
-    console.log(mobile);
-    console.log(address);
-    console.log(state);
-    console.log(city);
-    console.log(country);
+    navigate(`/checkout/${response.data.order_oid}`);
   };
 
   return (
