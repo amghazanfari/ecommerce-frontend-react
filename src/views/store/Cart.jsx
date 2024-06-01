@@ -163,7 +163,42 @@ function Cart() {
     }
   };
 
-  const createOrder = () => {
+  const createOrder = async () => {
+    if (
+      !fullName ||
+      !email ||
+      !mobile ||
+      !address ||
+      !state ||
+      !city ||
+      !country
+    ) {
+      Swal.fire({
+        icon: "warning",
+        title: "missing fields",
+        text: "all fields required before checkout",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("full_name", fullName);
+    formData.append("email", email);
+    formData.append("mobile", mobile);
+    formData.append("address", address);
+    formData.append("city", city);
+    formData.append("state", state);
+    formData.append("country", "iran");
+    formData.append("cart_id", cartID);
+    formData.append("user_id", userData ? userData?.user_id : 0);
+
+    const response = await apiInstance.post("create-order/", formData);
+    Toast.fire({
+      icon: "success",
+      title: response.data.message,
+    });
+
     console.log(fullName);
     console.log(email);
     console.log(mobile);
