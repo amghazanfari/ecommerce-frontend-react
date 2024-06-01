@@ -111,6 +111,23 @@ function Cart() {
     }
   }, []);
 
+  const handleDeleteCartItem = async (itemID) => {
+    const userID = userData?.user_id;
+    const url = userID
+      ? `cart-delete/${cartID}/${itemID}/${userID}/`
+      : `cart-delete/${cartID}/${itemID}/`;
+
+    await apiInstance.delete(url);
+
+    await fetchCartData(cartID, userData?.user_id);
+    await fetchCartTotal(cartID, userData?.user_id);
+
+    Toast.fire({
+      icon: "success",
+      title: "item removed from cart",
+    });
+  };
+
   return (
     <div>
       <main className="mt-5">
@@ -188,7 +205,10 @@ function Cart() {
                                 </span>
                               </p>
                               <p className="mt-3">
-                                <button className="btn btn-danger ">
+                                <button
+                                  onClick={() => handleDeleteCartItem(c.id)}
+                                  className="btn btn-danger "
+                                >
                                   <small>
                                     <i className="fas fa-trash me-2" />
                                     Remove
