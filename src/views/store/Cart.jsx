@@ -3,10 +3,20 @@ import { useState, useEffect } from "react";
 import apiInstance from "../../utils/axios";
 import UserData from "../plugin/UserData";
 import CartID from "../plugin/CartID";
+import Swal from "sweetalert2";
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top",
+  showConfirmButton: false,
+  timer: 1500,
+  timerProgressBar: true,
+});
 
 function Cart() {
   const [cart, setCart] = useState([]);
   const [cartTotal, setCartTotal] = useState([]);
+  const [productQuantity, setProductQuantity] = useState("");
 
   const userData = UserData();
   const cartID = CartID();
@@ -39,6 +49,54 @@ function Cart() {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  useEffect(() => {
+    const initialQuantity = {};
+    cart.forEach((c) => {
+      initialQuantity[c.cart_product?.id] = c.qty;
+    });
+    setProductQuantity(initialQuantity);
+  }, [cart]);
+  const handleQuantityChange = (event, product_id) => {
+    const quantity = event.target.value;
+
+    setProductQuantity((prevQuantity) => ({
+      ...prevQuantity,
+      [product_id]: quantity,
+    }));
+  };
+
+  const updateCart = async (
+    product_id,
+    price,
+    shipping_amount,
+    sizeValue,
+    colorValue
+  ) => {
+    const qtyValue = productQuantity[product_id];
+    console.log(qtyValue);
+
+    const formData = new FormData();
+
+    formData.append("product_id", product_id);
+    formData.append("user_id", userData?.user_id);
+    formData.append("qty", qtyValue);
+    formData.append("price", price);
+    formData.append("shipping_amount", shipping_amount);
+    formData.append("country", "iran");
+    formData.append("size", sizeValue);
+    formData.append("color", colorValue);
+    formData.append("cart_id", cartID);
+
+    const response = await apiInstance.post("cart-view/", formData);
+    Toast.fire({
+      icon: "success",
+      title: response.data.message,
+    });
+
+    fetchCartData(cartID, userData?.user_id);
+    fetchCartTotal(cartID, userData?.user_id);
   };
 
   useEffect(() => {
@@ -144,16 +202,35 @@ function Cart() {
                                   <input
                                     type="number"
                                     className="form-control"
-                                    value={c.qty}
+                                    value={
+                                      productQuantity[c.cart_product?.id] ||
+                                      c.qty
+                                    }
+                                    onChange={(e) =>
+                                      handleQuantityChange(e, c.cart_product.id)
+                                    }
                                     min={1}
                                   />
                                 </div>
-                                <button className="ms-2 btn btn-primary">
+                                <button
+                                  onClick={() =>
+                                    updateCart(
+                                      c.cart_product?.id,
+                                      c.cart_product?.price,
+                                      c.cart_product?.shipping_amount,
+                                      c.color,
+                                      c.size
+                                    )
+                                  }
+                                  className="ms-2 btn btn-primary"
+                                >
                                   <i className="fas fa-rotate-right"></i>
                                 </button>
                               </div>
                               <h5 className="mb-2 mt-3 text-center">
-                                <span className="align-middle">$100.00</span>
+                                <span className="align-middle">
+                                  {c.sub_total}
+                                </span>
                               </h5>
                             </div>
                           </div>
